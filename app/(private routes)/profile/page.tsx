@@ -1,67 +1,52 @@
-import Image from 'next/image';
+import { getMeServer } from '@/lib/api/serverApi';
 import Link from 'next/link';
-import { getServerMe } from '@/lib/api/serverApi';
+import Image from 'next/image';
+import { Metadata } from 'next';
 import css from './ProfilePage.module.css';
-import type { Metadata } from 'next';
 
-export async function generateMetadata(): Promise<Metadata> {
-  const user = await getServerMe();
+export const metadata: Metadata = {
+  title: 'Profile | NoteHub',
+  description: 'View and manage your NoteHub profile and account details.',
+  openGraph: {
+    title: 'Profile | NoteHub',
+    description: 'View and manage your NoteHub profile and account details.',
+    url: 'http://localhost:3000/notes/action/create',
+    images: [
+      {
+        url: 'https://ac.goit.global/fullstack/react/notehub-og-meta.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Profile | NoteHub',
+      },
+    ],
+  },
+};
 
-  return {
-    title: `${user.username} — Profile | NoteHub`,
-    description: `Profile of ${user.username} — manage your notes on NoteHub`,
-    openGraph: {
-      title: `${user.username} — Profile | NoteHub`,
-      description: `Profile of ${user.username} — manage your notes on NoteHub`,
-      url: 'https://your-domain.com/profile',
-      siteName: 'NoteHub',
-      images: [
-        {
-          url:
-            user.avatar ||
-            'https://ac.goit.global/fullstack/react/default-avatar.jpg',
-          width: 1200,
-          height: 630,
-          alt: `${user.username} avatar`,
-        },
-      ],
-      type: 'profile',
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: `${user.username} — Profile | NoteHub`,
-      description: `Profile of ${user.username} — manage your notes on NoteHub`,
-      images: [
-        user.avatar ||
-          'https://ac.goit.global/fullstack/react/default-avatar.jpg',
-      ],
-    },
-  };
-}
-export default async function ProfilePage() {
-  const user = await getServerMe();
-
+export default async function Profile() {
+  const user = await getMeServer();
   return (
     <main className={css.mainContent}>
       <div className={css.profileCard}>
         <div className={css.header}>
           <h1 className={css.formTitle}>Profile Page</h1>
-          <Link href="/profile/edit" className={css.editProfileButton}>
+          <Link href="profile/edit" className={css.editProfileButton}>
             Edit Profile
           </Link>
         </div>
         <div className={css.avatarWrapper}>
-          <Image
-            src={user.avatar || '/default-avatar.png'}
-            alt="User Avatar"
-            width={120}
-            height={120}
-            className={css.avatar}
-          />
+          {user?.avatar && (
+            <Image
+              src={user?.avatar}
+              alt="User Avatar"
+              width={120}
+              height={120}
+              className={css.avatar}
+            />
+          )}
         </div>
         <div className={css.profileInfo}>
-          <p>Username: {user.username}</p>
-          <p>Email: {user.email}</p>
+          <p>Username: {user?.username}</p>
+          <p>Email: {user?.email}</p>
         </div>
       </div>
     </main>
