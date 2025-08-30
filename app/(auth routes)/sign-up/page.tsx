@@ -1,49 +1,43 @@
 'use client';
 
 import { useState } from 'react';
-import { registerUser } from '@/lib/api/clientApi';
-import { useAuthStore } from '@/lib/store/authStore';
 import { useRouter } from 'next/navigation';
+import { register } from '@/lib/api/clientApi';
+import { useAuthStore } from '@/lib/store/authStore';
+import type { AuthRequestData } from '@/lib/api/clientApi';
 import css from './SignUpPage.module.css';
 
 export default function SignUpPage() {
   const router = useRouter();
-  const { setUser } = useAuthStore();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState('');
+  const setUser = useAuthStore(state => state.setUser);
 
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
-
+  const handleSubmit = async (formData: FormData) => {
     try {
-      const user = await registerUser(email, password);
-      setUser(user);
-      router.push('/profile');
-    } catch (err) {
-      console.error('Sign up error:', err);
-      setError('Registration failed');
-    } finally {
-      setLoading(false);
+      const formValues = Object.fromEntries(formData) as AuthRequestData;
+      const res = await register(formValues);
+      console.log('res', res);
+      if (res) {
+        setUser(res);
+        router.push('/profile');
+      } else {
+        setError('Invalid email or password');
+      }
+    } catch (error) {
+      setError(`Oops... some error${error}`);
     }
   };
 
   return (
     <main className={css.mainContent}>
       <h1 className={css.formTitle}>Sign up</h1>
-      <form onSubmit={handleSubmit} className={css.form}>
+      <form action={handleSubmit} className={css.form}>
         <div className={css.formGroup}>
           <label htmlFor="email">Email</label>
           <input
             id="email"
             type="email"
             name="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
             className={css.input}
             required
           />
@@ -55,20 +49,18 @@ export default function SignUpPage() {
             id="password"
             type="password"
             name="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
             className={css.input}
             required
           />
         </div>
 
         <div className={css.actions}>
-          <button type="submit" className={css.submitButton} disabled={loading}>
-            {loading ? 'Registering...' : 'Register'}
+          <button type="submit" className={css.submitButton}>
+            Register
           </button>
         </div>
 
-        {error && <p className={css.error}>{error}</p>}
+        <p className={css.error}>{error}</p>
       </form>
     </main>
   );

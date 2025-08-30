@@ -1,87 +1,83 @@
-import { api } from './api';
-import { Note, NewNote } from '@/types/note';
-import { User, UpdateUserDto } from '@/types/user';
+'use client';
 
-export interface NoteResponse {
+import type { Note, NewNoteData } from '@/types/note';
+import { User } from '@/types/user';
+import { api } from './api';
+
+interface NoteResponse {
   notes: Note[];
+  page?: number;
+  perPage?: number;
   totalPages: number;
 }
 
-const cache: Record<string, NoteResponse> = {};
+export type AuthRequestData = {
+  username: string;
+  email: string;
+};
 
-interface FetchNotesParams {
-  page: number;
-  perPage: number;
-  search?: string;
-  tag?: string;
-}
+type CheckSessionRequest = {
+  success: boolean;
+};
 
 export async function fetchNotes(
-  page = 1,
+  query: string,
+  page: number,
   perPage = 12,
-  search = '',
-  category?: string
+  tag?: string
 ): Promise<NoteResponse> {
-  const params: FetchNotesParams = { page, perPage };
-  if (search.trim()) params.search = search.trim();
-  if (category && category.toLowerCase() !== 'all') params.tag = category;
-
-  const cacheKey = JSON.stringify(params);
-  if (cache[cacheKey]) return cache[cacheKey];
-
-  const data = await api
-    .get<NoteResponse>('/notes', { params })
-    .then(res => res.data);
-  cache[cacheKey] = data;
-  return data;
+  const options = {
+    params: {
+      ...(query.trim() !== '' && { search: query }),
+      page,
+      perPage,
+      tag,
+    },
+  };
+  const response = await api.get<NoteResponse>('/notes', options);
+  return response.data;
 }
 
-export async function fetchNoteById(id: string): Promise<Note> {
-  return api.get<Note>(`/notes/${id}`).then(res => res.data);
-}
-
-export async function createNote(newNote: NewNote): Promise<Note> {
-  return api.post<Note>('/notes', newNote).then(res => res.data);
+export async function createNote(noteData: NewNoteData): Promise<Note> {
+  const response = await api.post<Note>('/notes', noteData);
+  return response.data;
 }
 
 export async function deleteNote(noteId: string): Promise<Note> {
-  return api.delete<Note>(`/notes/${noteId}`).then(res => res.data);
+  const response = await api.delete<Note>(`/notes/${noteId}`);
+  return response.data;
 }
 
-export const registerUser = async (
-  email: string,
-  password: string
-): Promise<User> => {
-  return api
-    .post<User>('/auth/register', { email, password })
-    .then(res => res.data);
+export const fetchNoteById = async (id: string) => {
+  const res = await api.get<Note>(`/notes/${id}`);
+  return res.data;
 };
 
-export const loginUser = async (
-  email: string,
-  password: string
-): Promise<User> => {
-  return api
-    .post<User>('/auth/login', { email, password })
-    .then(res => res.data);
+export async function register(payload: AuthRequestData) {
+  const res = await api.post<User>('/auth/register', payload);
+  return res.data;
+}
+
+export async function login(payload: AuthRequestData) {
+  const res = await api.post<User>('/auth/login', payload);
+  return res.data;
+}
+
+export const checkSession = async () => {
+  const res = await api.get<CheckSessionRequest>('/auth/session');
+  return res.data.success;
 };
 
-export const logoutUser = async (): Promise<void> => {
-  await api.post('/auth/logout').then(res => res.data);
+export const getMe = async (): Promise<User> => {
+  const { data } = await api.get<User>('/users/me');
+  return data;
 };
 
-export const getSession = async (): Promise<{ valid: boolean }> => {
-  return api.get<{ valid: boolean }>('/auth/session').then(res => res.data);
+export const logout = async (): Promise<void> => {
+  await api.post('/auth/logout');
 };
 
-export const getCurrentUser = async (): Promise<User> => {
-  return api.get<User>('/users/me').then(res => res.data);
-};
-
-export const updateCurrentUser = async (
-  payload: UpdateUserDto
-): Promise<User> => {
-  return api.patch<User>('/users/me', payload).then(res => res.data);
-};
-
-export { api };
+export async function updateMe(data: Partial<User>) {
+  const response = await api.patch<User>('/users/me', data);
+  return response.data;
+}

@@ -12,11 +12,14 @@ const Header = () => {
       <nav aria-label="Main Navigation">
         <ul className={css.navigation}>
           <li>
-            <AuthNavigation />
+            <Link href="/">Home</Link>
           </li>
           <li>
             <TagsMenu />
           </li>
+
+          {}
+          <AuthNavigation />
         </ul>
       </nav>
     </header>

@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { loginUser } from '@/lib/api/clientApi';
+import { login } from '@/lib/api/clientApi';
 import { useAuthStore } from '@/lib/store/authStore';
+import type { AuthRequestData } from '@/lib/api/clientApi';
 import { useRouter } from 'next/navigation';
 import css from './SignInPage.module.css';
 
@@ -13,23 +14,26 @@ export default function SignInPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (formData: FormData) => {
     setError(null);
 
     try {
-      const user = await loginUser(email, password);
-      setUser(user);
-      router.push('/profile');
-    } catch (err) {
-      console.error('Login error:', err);
-      setError('Invalid email or password');
+      const formValues = Object.fromEntries(formData) as AuthRequestData;
+      const user = await login(formValues);
+      if (user) {
+        setUser(user);
+        router.push('/profile');
+      } else {
+        setError('Invalid email or password');
+      }
+    } catch (error) {
+      setError(`Oops... some error${error}`);
     }
   };
 
   return (
     <main className={css.mainContent}>
-      <form onSubmit={handleSubmit} className={css.form}>
+      <form action={handleSubmit} className={css.form}>
         <h1 className={css.formTitle}>Sign in</h1>
 
         <div className={css.formGroup}>
