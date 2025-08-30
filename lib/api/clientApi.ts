@@ -1,4 +1,3 @@
-// lib/api/clientApi.ts
 import { api } from './api';
 import { Note, NewNote } from '@/types/note';
 import { User, UpdateUserDto } from '@/types/user';
