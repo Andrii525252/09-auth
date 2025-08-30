@@ -1,3 +1,4 @@
+import AuthNavigation from '../AuthNavigation/AuthNavigation';
 import TagsMenu from '../TagsMenu/TagsMenu';
 import css from './Header.module.css';
 import Link from 'next/link';
@@ -11,7 +12,7 @@ const Header = () => {
       <nav aria-label="Main Navigation">
         <ul className={css.navigation}>
           <li>
-            <Link href="/">Home</Link>
+            <AuthNavigation />
           </li>
           <li>
             <TagsMenu />
