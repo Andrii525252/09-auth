@@ -1,7 +1,7 @@
 'use client';
 
 import type { Note, NewNoteData } from '@/types/note';
-import { User } from '@/types/user';
+import { UpdateUserDto, User } from '@/types/user';
 import { api } from './api';
 
 export interface NoteResponse {
@@ -92,3 +92,9 @@ export async function updateMe(data: Partial<User>) {
   const response = await api.patch<User>('/users/me', data);
   return response.data;
 }
+
+export const updateCurrentUser = async (
+  payload: UpdateUserDto
+): Promise<User> => {
+  return api.patch<User>('/users/me', payload).then(res => res.data);
+};

@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getCurrentUser, updateCurrentUser } from '@/lib/api/clientApi';
+import { getMe, updateCurrentUser } from '@/lib/api/clientApi';
 import css from './EditProfilePage.module.css';
 import Image from 'next/image';
 import { useAuthStore } from '@/lib/store/authStore';
@@ -12,7 +12,7 @@ const EditProfile = () => {
   const router = useRouter();
 
   useEffect(() => {
-    getCurrentUser().then(user => {
+    getMe().then(user => {
       setUsername(user.username ?? '');
     });
   }, []);
