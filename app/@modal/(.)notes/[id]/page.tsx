@@ -1,4 +1,4 @@
-import { fetchNoteById } from '@/lib/api/serverApi';
+import { fetchNoteByIdServer } from '@/lib/api/serverApi';
 import NotePreviewClient from './NotePreview.client';
 import { Metadata } from 'next';
 import {
@@ -24,7 +24,7 @@ export default async function NoteDetailsModal({
 
   await queryClient.prefetchQuery({
     queryKey: ['note', id],
-    queryFn: () => fetchNoteById(id),
+    queryFn: () => fetchNoteByIdServer(id),
   });
 
   return (
@@ -36,7 +36,7 @@ export default async function NoteDetailsModal({
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const note = await fetchNoteById(id);
+  const note = await fetchNoteByIdServer(id);
 
   return {
     title: `Preview: ${note.title}`,
