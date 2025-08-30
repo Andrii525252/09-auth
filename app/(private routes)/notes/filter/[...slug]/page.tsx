@@ -1,34 +1,35 @@
 import { fetchNotes } from '@/lib/api/serverApi';
 import NotesClient from './Notes.client';
-import { Metadata } from 'next';
 
+import { Metadata } from 'next';
 type Props = {
   params: Promise<{ slug: string[] }>;
 };
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
-  const tag = slug[0] === 'All' ? undefined : slug[0];
+  const resolvedParams = await params;
+  const { slug } = resolvedParams;
+
+  const tag = slug[0] === 'all' ? undefined : slug[0];
   return {
-    title: `Notes: ${tag}`,
-    description: `${tag} notes list`,
+    title: `Note tag: ${tag}`,
+    description: `Browse notes filtered by the "${tag}" tag.`,
     openGraph: {
-      title: `Notes: ${tag}`,
-      description: `${tag} notes list`,
-      url: `https://08-zustand-ten-kappa.vercel.app/notes/filter/${tag}`,
+      title: `Note tag: ${tag}`,
+      description: `Browse notes filtered by the "${tag}" tag.`,
+      url: `http://localhost:3001/notes/filter/${tag}`,
+      siteName: 'NoteHub',
       images: [
         {
-          url: 'https://ac.goit.global/fullstack/react/og-meta.jpg',
+          url: 'https://ac.goit.global/fullstack/react/notehub-og-meta.jpg',
           width: 1200,
           height: 630,
-          alt: 'NoteHub logo',
+          alt: 'NoteHub',
         },
       ],
       type: 'article',
     },
   };
 }
-
 const NotesByCategory = async ({ params }: Props) => {
   const resolvedParams = await params;
   const { slug } = resolvedParams;

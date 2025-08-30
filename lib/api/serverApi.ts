@@ -3,33 +3,31 @@ import { api } from './api';
 import { cookies } from 'next/headers';
 import { User } from '@/types/user';
 
-interface NoteResponse {
+export interface FetchNotesResponse {
   notes: Note[];
-  page?: number;
-  perPage?: number;
   totalPages: number;
 }
 
-export async function fetchNotesServer(
-  query: string,
+export const fetchNotes = async (
   page: number,
-  perPage = 12,
+  perPage: number = 12,
+  search: string = '',
   tag?: string
-): Promise<NoteResponse> {
-  const cookieStore = cookies();
-  const options = {
+): Promise<FetchNotesResponse> => {
+  const cookieStore = await cookies();
+  const { data } = await api.get<FetchNotesResponse>('/notes', {
     params: {
-      ...(query.trim() !== '' && { search: query }),
       page,
       perPage,
-      tag,
+      ...(search.trim() ? { search } : {}),
+      ...(tag && tag.toLowerCase() !== 'all' ? { tag } : {}),
     },
-    headers: { Cookie: cookieStore.toString() },
-  };
-  const response = await api.get<NoteResponse>('/notes', options);
-
-  return response.data;
-}
+    headers: {
+      Cookie: cookieStore.toString(),
+    },
+  });
+  return data;
+};
 
 export const fetchNoteByIdServer = async (id: string) => {
   const cookieStore = cookies();

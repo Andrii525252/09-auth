@@ -4,12 +4,14 @@ import type { Note, NewNoteData } from '@/types/note';
 import { User } from '@/types/user';
 import { api } from './api';
 
-interface NoteResponse {
+export interface NoteResponse {
   notes: Note[];
   page?: number;
   perPage?: number;
   totalPages: number;
 }
+
+const cache: Record<string, NoteResponse> = {};
 
 export type AuthRequestData = {
   username: string;
@@ -20,22 +22,31 @@ type CheckSessionRequest = {
   success: boolean;
 };
 
+interface FetchNotesParams {
+  page: number;
+  perPage: number;
+  search?: string;
+  tag?: string;
+}
+
 export async function fetchNotes(
-  query: string,
-  page: number,
+  page = 1,
   perPage = 12,
-  tag?: string
+  search = '',
+  category?: string
 ): Promise<NoteResponse> {
-  const options = {
-    params: {
-      ...(query.trim() !== '' && { search: query }),
-      page,
-      perPage,
-      tag,
-    },
-  };
-  const response = await api.get<NoteResponse>('/notes', options);
-  return response.data;
+  const params: FetchNotesParams = { page, perPage };
+  if (search.trim()) params.search = search.trim();
+  if (category && category.toLowerCase() !== 'all') params.tag = category;
+
+  const cacheKey = JSON.stringify(params);
+  if (cache[cacheKey]) return cache[cacheKey];
+
+  const data = await api
+    .get<NoteResponse>('/notes', { params })
+    .then(res => res.data);
+  cache[cacheKey] = data;
+  return data;
 }
 
 export async function createNote(noteData: NewNoteData): Promise<Note> {
