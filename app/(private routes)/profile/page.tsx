@@ -1,4 +1,4 @@
-import { getMeServer } from '@/lib/api/serverApi';
+import { getServerMe } from '@/lib/api/serverApi';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Metadata } from 'next';
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Profile() {
-  const user = await getMeServer();
+  const user = await getServerMe();
   return (
     <main className={css.mainContent}>
       <div className={css.profileCard}>

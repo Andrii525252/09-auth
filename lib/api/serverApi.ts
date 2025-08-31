@@ -1,7 +1,33 @@
-import type { Note } from '@/types/note';
 import { api } from './api';
+import type { Note } from '@/types/note';
 import { cookies } from 'next/headers';
-import { User } from '@/types/user';
+import type { User } from '@/types/user';
+import type { AxiosResponse } from 'axios';
+
+export const serverGetSession = async (): Promise<AxiosResponse<unknown>> => {
+  const store = await cookies();
+  return api.get('/auth/session', { headers: { Cookie: store.toString() } });
+};
+
+export const getServerMe = async (): Promise<User> => {
+  const cookieStore = await cookies();
+  const { data } = await api.get<User>('/users/me', {
+    headers: {
+      Cookie: cookieStore.toString(),
+    },
+  });
+  return data;
+};
+
+export const updateServerMe = async (payload: Partial<User>): Promise<User> => {
+  const cookieStore = await cookies();
+  const { data } = await api.patch<User>('/users/me', payload, {
+    headers: {
+      Cookie: cookieStore.toString(),
+    },
+  });
+  return data;
+};
 
 export interface FetchNotesResponse {
   notes: Note[];
@@ -29,36 +55,12 @@ export const fetchNotes = async (
   return data;
 };
 
-export const fetchNoteByIdServer = async (id: string) => {
-  const cookieStore = cookies();
-  const options = {
-    headers: { Cookie: cookieStore.toString() },
-  };
-  const res = await api.get<Note>(`/notes/${id}`, options);
-  return res.data;
-};
-
-export const checkServerSession = async () => {
-  const cookieStore = cookies();
-  const res = await api.get('/auth/session', {
+export const fetchNoteById = async (id: string): Promise<Note> => {
+  const cookieStore = await cookies();
+  const { data } = await api.get<Note>(`/notes/${id}`, {
     headers: {
       Cookie: cookieStore.toString(),
     },
   });
-  return res;
-};
-
-export const getMeServer = async (): Promise<User | null> => {
-  try {
-    const cookieStore = cookies();
-    const res = await api.get<User>('/users/me', {
-      headers: {
-        Cookie: cookieStore.toString(),
-      },
-    });
-    return res.data;
-  } catch (error) {
-    console.error('Failed to fetch user on server:', error);
-    return null;
-  }
+  return data;
 };
